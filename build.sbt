@@ -16,17 +16,17 @@
   */
 name := "spark-netezza"
 
-version := "1.0.0-SNAPSHOT"
+version := "1.0.1-SNAPSHOT"
 
 organization := "com.ibm.SparkTC"
 
 spName := "SparkTC/spark-netezza"
 
-scalaVersion := "2.10.5"
+scalaVersion := "2.11.7"
 
-crossScalaVersions := Seq("2.10.5", "2.11.7")
+// crossScalaVersions := Seq("2.10.5", "2.11.7")
 
-sparkVersion := "1.5.2"
+sparkVersion := "2.1.1"
 
 // All Spark Packages need a license
 licenses := Seq("Apache-2.0" -> url("http://opensource.org/licenses/Apache-2.0"))

@@ -44,7 +44,7 @@ private[netezza] case class NetezzaRelation(
   /**
     * This method is introduced in 1.6 as optimization. But this package compiles from 1.5.
     */
-  def unhandledFilters(filters: Array[Filter]): Array[Filter] = {
+  override def unhandledFilters(filters: Array[Filter]): Array[Filter] = {
     filters.filter(NetezzaFilters.generateFilterExpr(_).isEmpty)
   }
 
