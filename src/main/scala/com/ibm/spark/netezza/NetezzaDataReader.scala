@@ -37,13 +37,26 @@ class NetezzaDataReader(conn: Connection,
                         columns: Array[String],
                         filters: Array[Filter],
                         partition: NetezzaPartition,
-                        schema: StructType) extends Iterator[NetezzaRow] {
+                        schema: StructType,
+                        opts: Map[String, String] = Map.empty) extends Iterator[NetezzaRow] {
 
   private val log = LoggerFactory.getLogger(getClass)
 
-  val escapeChar: Char = '\\';
   val delimiter: Char = '\001';
-  val recordParser = new NetezzaRecordParser(delimiter, escapeChar, schema)
+  val escapeChar: Char = '\\';
+
+  // val charOptions = List("DateDelim", "DecimalDelim", "Delimiter", "EscapeChar", "TimeDelim")
+  val defaultOpts: Map[String, String] = Map(
+    "DELIMITER" -> s"$delimiter",
+    "ESCAPECHAR" -> s"$escapeChar",
+    "REMOTESOURCE" -> "JDBC",
+    "NULLVALUE" -> "null",
+    "BOOLSTYLE" -> "T_F"
+  )
+
+  val ntzOpts = defaultOpts ++ opts.map { case(k, v) => k.toUpperCase -> v }
+
+  val recordParser = new NetezzaRecordParser(delimiter, escapeChar, schema, ntzOpts)
 
   // thread for creating table
   var execThread: NetezzaUtils.StatementExecutorThread = null
@@ -90,6 +103,8 @@ class NetezzaDataReader(conn: Connection,
    */
   def buildExternalTableQuery(pipeId: String): String = {
 
+    //noinspection ScalaStyle
+    // https://www.ibm.com/support/knowledgecenter/SSULQD_7.1.0/com.ibm.nz.load.doc/c_load_options.html
     val baseQuery = {
       val whereClause = NetezzaFilters.getWhereClause(filters, partition)
       val colStrBuilder = new StringBuilder()
@@ -104,11 +119,13 @@ class NetezzaDataReader(conn: Connection,
     // build external table initialized by base query
     val query: StringBuilder = new StringBuilder()
     query.append("CREATE EXTERNAL TABLE '" + pipeId + "'")
-    query.append(" USING (delimiter '" + delimiter + "' ")
-    query.append(" escapeChar '" + escapeChar + "' ")
 
-    query.append(" REMOTESOURCE 'JDBC' NullValue 'null' BoolStyle 'T_F'")
-    query.append(")")
+    if (ntzOpts.nonEmpty) {
+      query.append(" USING (")
+      ntzOpts.foreach { case (k, v) => query.append( s" $k '$v' ") }
+      query.append(")")
+    }
+
     query.append(" AS " + baseQuery.toString() + " ")
 
     log.info("External Table Query: " + query)

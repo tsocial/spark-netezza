@@ -46,20 +46,22 @@ class DataConversionSuite extends NetezzaBaseSuite {
       Column("col1", java.sql.Types.DATE), Column("col2", java.sql.Types.TIMESTAMP),
       Column("col3", java.sql.Types.TIMESTAMP), Column("col4", java.sql.Types.TIMESTAMP),
       Column("col5", java.sql.Types.TIMESTAMP), Column("col6", java.sql.Types.TIMESTAMP),
-      Column("col7", java.sql.Types.TIMESTAMP))
+      Column("col7", java.sql.Types.TIMESTAMP), Column("col8", java.sql.Types.TIME),
+      Column("col9", java.sql.Types.TIME))
 
     val schema = buildSchema(dbCols)
     val nzrow: NetezzaRow = new NetezzaRow(schema)
     var i = 0
     for (value <- Array("1947-08-15", "2000-12-24 01:02", "1901-12-24 01:02:03",
-      "1850-01-24 01:02:03.1", "2020-11-24 01:02:03.12", "2015-11-24 01:02:03.123", null)) {
+      "1850-01-24 01:02:03.1", "2020-11-24 01:02:03.12", "2015-11-24 01:02:03.123", null,
+      "01:02:03", "01:02")) {
       nzrow.setValue(i, value)
       i = i + 1
     }
 
     // cast it regular row, and call only spark sql row method for verification.
     val row: Row = nzrow
-    assert(row.length == 7)
+    assert(row.length == 9)
     assert(row.get(0) == java.sql.Date.valueOf("1947-08-15"))
     assert(row.get(1) == java.sql.Timestamp.valueOf("2000-12-24 01:02:00"))
     assert(row.get(2) == java.sql.Timestamp.valueOf("1901-12-24 01:02:03"))
@@ -67,6 +69,8 @@ class DataConversionSuite extends NetezzaBaseSuite {
     assert(row.get(4) == java.sql.Timestamp.valueOf("2020-11-24 01:02:03.012"))
     assert(row.get(5) == java.sql.Timestamp.valueOf("2015-11-24 01:02:03.123"))
     assert(row.get(6) == null.asInstanceOf[java.sql.Timestamp])
+    assert(row.get(7) == new java.sql.Timestamp(java.sql.Time.valueOf("01:02:03").getTime))
+    assert(row.get(8) == new java.sql.Timestamp(java.sql.Time.valueOf("01:02:00").getTime))
   }
 
   test("Test Boolean datatypes") {

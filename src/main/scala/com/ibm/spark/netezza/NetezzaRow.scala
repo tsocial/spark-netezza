@@ -25,14 +25,16 @@ import org.apache.spark.sql.types._
   * Converts Netezza format data into Spark SQL row. This is mutable row type
   * to avoid creating too many object of this type for passing each row.
   */
-private[netezza] class NetezzaRow(schema: StructType) extends Row {
+private[netezza] class NetezzaRow(schema: StructType, options: Map[String, String] = Map.empty) extends Row {
+
+  val dateTimeFormat = options.get("dateTimeFormat")
 
   override def length: Int = schema.length
 
   override def get(i: Int): Any = getValue(i)
 
   override def copy(): Row = {
-    val row = new NetezzaRow(this.schema)
+    val row = new NetezzaRow(this.schema, options)
     row.netezzaValues = this.netezzaValues.clone()
     row
   }
@@ -74,21 +76,23 @@ private[netezza] class NetezzaRow(schema: StructType) extends Row {
     * until we understand if this code called by called by multiple threads are not by Spark RDD.
     */
   def parseTimestamp(value: String): java.sql.Timestamp = {
-    var pattern = "yyyy-MM-dd HH:mm" // length 16
-    if (value.length() == 19) {
-      pattern = "yyyy-MM-dd HH:mm:ss" // length 19
-    }
-    if (value.length() > 19) {
-      pattern = "yyyy-MM-dd HH:mm:ss." // length > 19
-      val milisecPositions = value.length() - 20
-      for (i <- 0 until milisecPositions) {
-        pattern += "S"
-      }
-    }
+
+    val pattern = dateTimeFormat.getOrElse(inferDateTimeFormat(value.length))
 
     val df: SimpleDateFormat = new SimpleDateFormat(pattern)
     val date = df.parse(value)
     new java.sql.Timestamp(date.getTime())
+  }
+
+  def inferDateTimeFormat(length: Int): String = {
+    length match {
+      case 5 => "HH:mm"
+      case 8 => "HH:mm:ss"
+      case 16 => "yyyy-MM-dd HH:mm"
+      case 19 => "yyyy-MM-dd HH:mm:ss"
+      case x if x > 19 => "yyyy-MM-dd HH:mm:ss.".padTo(length, 'S').toString() // length > 19
+      case _ => throw new IllegalArgumentException("Invalid TimeStamp length")
+    }
   }
 
   /**

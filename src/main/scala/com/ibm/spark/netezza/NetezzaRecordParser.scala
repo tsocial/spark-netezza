@@ -27,10 +27,15 @@ import scala.collection.mutable
   * the remote client pipe. Format of the data is controlled by the external
   * table definition options.
   */
-class NetezzaRecordParser(delimiter: Char, escapeChar: Char, schema: StructType) {
+class NetezzaRecordParser(
+  delimiter: Char,
+  escapeChar: Char,
+  schema: StructType,
+  options: Map[String, String] = Map.empty
+) {
 
   val csvFormat = CSVFormat.DEFAULT.withDelimiter(delimiter).withEscape(escapeChar)
-  val row: NetezzaRow = new NetezzaRow(schema)
+  val row: NetezzaRow = new NetezzaRow(schema, options)
 
   /**
     * Parse the input String into column values.

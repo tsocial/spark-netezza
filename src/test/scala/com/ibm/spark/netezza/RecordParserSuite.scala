@@ -108,4 +108,35 @@ class RecordParserSuite extends NetezzaBaseSuite {
     assert(recordParser.parse("null").get(0) == null)
   }
 
+  test("test  `NetezzaRecordParser` with options") {
+    val dbCols = Array(
+      Column("timestamp", java.sql.Types.TIMESTAMP),
+      Column("time", java.sql.Types.TIME))
+    val schema = buildSchema(dbCols)
+    val recordParser = new NetezzaRecordParser(delimiter, escape, schema, Map("dateTimeFormat" -> "yyyyMMdd HH:mm.ss.SSS"))
+    val row = recordParser.parse(s"20190101 01:02.03.123${delimiter}20190102 02:03.04.456")
+
+    assert(row.get(0) == java.sql.Timestamp.valueOf("2019-01-01 01:02:03.123"))
+    assert(row.get(1) == java.sql.Timestamp.valueOf("2019-01-02 02:03:04.456"))
+  }
+
+  test("test special chars ") {
+    val strs = List(
+      """special\r\nChar1""",
+      """special\rChar2""",
+      """special\nChar3"""
+    )
+    val dbCols = Array(
+      Column("s1", java.sql.Types.VARCHAR),
+      Column("s2", java.sql.Types.VARCHAR),
+      Column("s3", java.sql.Types.VARCHAR))
+    val schema = buildSchema(dbCols)
+    val recordParser = new NetezzaRecordParser(delimiter, escape, schema)
+    val row = recordParser.parse(strs.mkString(delimiter.toString))
+
+    assert(row.get(0) == "special\r\nChar1")
+    assert(row.get(1) == "special\rChar2")
+    assert(row.get(2) == "special\nChar3")
+  }
+
 }
