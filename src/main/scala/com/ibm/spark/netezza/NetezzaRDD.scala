@@ -25,6 +25,7 @@ import org.apache.spark.sql.Row
 import org.apache.spark.sql.sources._
 import org.apache.spark.sql.types._
 import org.apache.spark.{Partition, SparkContext, TaskContext}
+import scala.collection.JavaConverters._
 
 /**
   * Data corresponding to one partition of a Netezza RDD.
@@ -69,7 +70,7 @@ private[netezza] class NetezzaRDD(
       context.addTaskCompletionListener { context => close() }
       val part = thePart.asInstanceOf[NetezzaPartition]
       val conn = getConnection()
-      val reader = new NetezzaDataReader(conn, table, columns, filters, part, schema)
+      val reader = new NetezzaDataReader(conn, table, columns, filters, part, schema, properties.asScala.toMap)
       reader.startExternalTableDataUnload()
 
       def getNext(): Row = {
