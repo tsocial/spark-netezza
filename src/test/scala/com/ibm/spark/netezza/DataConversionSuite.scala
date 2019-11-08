@@ -54,7 +54,7 @@ class DataConversionSuite extends NetezzaBaseSuite {
     var i = 0
     for (value <- Array("1947-08-15", "2000-12-24 01:02", "1901-12-24 01:02:03",
       "1850-01-24 01:02:03.1", "2020-11-24 01:02:03.12", "2015-11-24 01:02:03.123", null,
-      "01:02:03", "01:02")) {
+      "01:02:03", "01:02:00")) {
       nzrow.setValue(i, value)
       i = i + 1
     }
@@ -69,8 +69,8 @@ class DataConversionSuite extends NetezzaBaseSuite {
     assert(row.get(4) == java.sql.Timestamp.valueOf("2020-11-24 01:02:03.012"))
     assert(row.get(5) == java.sql.Timestamp.valueOf("2015-11-24 01:02:03.123"))
     assert(row.get(6) == null.asInstanceOf[java.sql.Timestamp])
-    assert(row.get(7) == new java.sql.Timestamp(java.sql.Time.valueOf("01:02:03").getTime))
-    assert(row.get(8) == new java.sql.Timestamp(java.sql.Time.valueOf("01:02:00").getTime))
+    assert(row.get(7) == new String("01:02:03"))
+    assert(row.get(8) == new String("01:02:00"))
   }
 
   test("Test Boolean datatypes") {

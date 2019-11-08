@@ -117,7 +117,7 @@ class RecordParserSuite extends NetezzaBaseSuite {
     val row = recordParser.parse(s"20190101 01:02.03.123${delimiter}20190102 02:03.04.456")
 
     assert(row.get(0) == java.sql.Timestamp.valueOf("2019-01-01 01:02:03.123"))
-    assert(row.get(1) == java.sql.Timestamp.valueOf("2019-01-02 02:03:04.456"))
+    assert(row.get(1) == new String("20190102 02:03.04.456"))
   }
 
   test("test special chars ") {
