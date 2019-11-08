@@ -118,7 +118,7 @@ private[netezza] object NetezzaSchema {
       case java.sql.Types.ROWID => LongType
       case java.sql.Types.SMALLINT => IntegerType
       case java.sql.Types.STRUCT => StringType
-      case java.sql.Types.TIME => TimestampType
+      case java.sql.Types.TIME => StringType
       case java.sql.Types.TIMESTAMP => TimestampType
       case java.sql.Types.TINYINT => IntegerType
       case java.sql.Types.VARBINARY => BinaryType
