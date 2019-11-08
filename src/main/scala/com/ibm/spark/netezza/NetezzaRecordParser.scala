@@ -17,8 +17,9 @@
 
 package com.ibm.spark.netezza
 
-import org.apache.commons.csv.{CSVParser, CSVFormat}
+import org.apache.commons.csv.{CSVFormat, CSVParser}
 import org.apache.spark.sql.types.StructType
+import org.slf4j.LoggerFactory
 
 import scala.collection.mutable
 
@@ -36,6 +37,7 @@ class NetezzaRecordParser(
 
   val csvFormat = CSVFormat.DEFAULT.withDelimiter(delimiter).withEscape(escapeChar)
   val row: NetezzaRow = new NetezzaRow(schema, options)
+  private val log = LoggerFactory.getLogger(getClass)
 
   /**
     * Parse the input String into column values.
@@ -45,19 +47,27 @@ class NetezzaRecordParser(
     */
   def parse(input: String): NetezzaRow = {
     val parser = CSVParser.parse(input, csvFormat)
-    val records = parser.getRecords()
-    records.isEmpty match {
-      case true => {
-        // null value for single column select.
-        row.setValue(0, "")
-      }
-      case false => {
-        // Parsing is one row at a tine , only one record expected.
-        val record = records.get(0)
-        for (i: Int <- 0 until record.size()) {
-          row.setValue(i, record.get(i))
+    try {
+      val records = parser.getRecords()
+      records.isEmpty match {
+        case true => {
+          // null value for single column select.
+          row.setValue(0, "")
+        }
+        case false => {
+          // Parsing is one row at a tine , only one record expected.
+          val record = records.get(0)
+          for (i: Int <- 0 until record.size()) {
+            row.setValue(i, record.get(i))
+          }
         }
       }
+    } catch {
+      case e: Exception => {
+        log.error("Failed to parse row: " + input)
+        e.printStackTrace()
+        throw e
+      };
     }
     row
   }
