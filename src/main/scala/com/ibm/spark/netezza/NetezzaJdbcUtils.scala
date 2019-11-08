@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory
 private[netezza] object NetezzaJdbcUtils {
 
   private val log = LoggerFactory.getLogger(getClass)
-
+  val ntz_query_opt_prefix = "ntz_query_opt_"
   /**
     * Given  an url, return a function that loads the
     * specified driver string then returns a connection to the JDBC url.

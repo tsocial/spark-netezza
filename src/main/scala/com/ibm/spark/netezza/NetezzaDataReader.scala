@@ -54,7 +54,7 @@ class NetezzaDataReader(conn: Connection,
     "BOOLSTYLE" -> "T_F"
   )
 
-  val ntzOpts = defaultOpts ++ opts.map { case(k, v) => k.toUpperCase -> v }
+  val ntzOpts = defaultOpts ++ opts.map { case(k, v) => k.replaceFirst(NetezzaJdbcUtils.ntz_query_opt_prefix, "").toUpperCase -> v }
 
   val recordParser = new NetezzaRecordParser(delimiter, escapeChar, schema, ntzOpts)
 

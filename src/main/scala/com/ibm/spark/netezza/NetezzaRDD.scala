@@ -70,7 +70,8 @@ private[netezza] class NetezzaRDD(
       context.addTaskCompletionListener { context => close() }
       val part = thePart.asInstanceOf[NetezzaPartition]
       val conn = getConnection()
-      val reader = new NetezzaDataReader(conn, table, columns, filters, part, schema, properties.asScala.toMap)
+      val reader = new NetezzaDataReader(conn, table, columns, filters, part, schema,
+        properties.asScala.filterKeys { key => key.startsWith(NetezzaJdbcUtils.ntz_query_opt_prefix)}.toMap)
       reader.startExternalTableDataUnload()
 
       def getNext(): Row = {
