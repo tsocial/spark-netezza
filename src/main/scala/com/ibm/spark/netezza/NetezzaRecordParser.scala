@@ -17,7 +17,7 @@
 
 package com.ibm.spark.netezza
 
-import org.apache.commons.csv.{CSVFormat, CSVParser}
+import org.apache.commons.csv.{CSVFormat, CSVParser, QuoteMode}
 import org.apache.spark.sql.types.StructType
 import org.slf4j.LoggerFactory
 
@@ -35,7 +35,7 @@ class NetezzaRecordParser(
   options: Map[String, String] = Map.empty
 ) {
 
-  val csvFormat = CSVFormat.DEFAULT.withDelimiter(delimiter).withEscape(escapeChar)
+  val csvFormat = CSVFormat.DEFAULT.withQuoteMode(QuoteMode.NONE).withDelimiter(delimiter).withEscape(escapeChar)
   val row: NetezzaRow = new NetezzaRow(schema, options)
   private val log = LoggerFactory.getLogger(getClass)
 
