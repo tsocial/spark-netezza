@@ -35,7 +35,7 @@ class NetezzaRecordParser(
   options: Map[String, String] = Map.empty
 ) {
 
-  val csvFormat = CSVFormat.DEFAULT.withDelimiter(delimiter).withEscape(escapeChar).withQuoteMode(QuoteMode.NONE)
+  val csvFormat = CSVFormat.DEFAULT.withDelimiter(delimiter).withEscape(escapeChar).withQuote(null).withQuoteMode(QuoteMode.NONE)
   val row: NetezzaRow = new NetezzaRow(schema, options)
   private val log = LoggerFactory.getLogger(getClass)
 

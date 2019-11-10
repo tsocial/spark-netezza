@@ -138,5 +138,23 @@ class RecordParserSuite extends NetezzaBaseSuite {
     assert(row.get(1) == "special\rChar2")
     assert(row.get(2) == "special\nChar3")
   }
+  test("test parse string start with double quote without closing ") {
+    val strs = List(
+      """12345""",
+      """"232""",
+      """"2342"""
+    )
+    val dbCols = Array(
+      Column("s1", java.sql.Types.VARCHAR),
+      Column("s2", java.sql.Types.VARCHAR),
+      Column("s3", java.sql.Types.VARCHAR))
+    val schema = buildSchema(dbCols)
+    val recordParser = new NetezzaRecordParser(delimiter, escape, schema)
+    val row = recordParser.parse(strs.mkString(delimiter.toString))
+
+    assert(row.get(0) == "12345")
+    assert(row.get(1) == """"232""")
+    assert(row.get(2) == """"2342""")
+  }
 
 }
