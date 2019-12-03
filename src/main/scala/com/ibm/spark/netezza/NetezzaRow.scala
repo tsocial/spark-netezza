@@ -19,13 +19,16 @@ package com.ibm.spark.netezza
 
 import org.apache.spark.sql.Row
 import java.text.SimpleDateFormat
+
 import org.apache.spark.sql.types._
+import org.slf4j.LoggerFactory
 
 /**
   * Converts Netezza format data into Spark SQL row. This is mutable row type
   * to avoid creating too many object of this type for passing each row.
   */
 private[netezza] class NetezzaRow(schema: StructType, options: Map[String, String] = Map.empty) extends Row {
+  private val log = LoggerFactory.getLogger(getClass)
 
   val dateTimeFormat = options.get("dateTimeFormat")
 
@@ -67,7 +70,16 @@ private[netezza] class NetezzaRow(schema: StructType, options: Map[String, Strin
 
   def getValue(i: Int): Any = {
     val data = netezzaValues(i)
-    if (data == null) null else conversionFunctions(i)(data)
+    if (data == null) null else {
+      try {
+        conversionFunctions(i)(data)
+      } catch {
+        case e: Exception => {
+          log.error("Failed to convert netezza values to Spark row: " + netezzaValues.mkString(","))
+          throw e
+        };
+      }
+    }
   }
 
   /**
