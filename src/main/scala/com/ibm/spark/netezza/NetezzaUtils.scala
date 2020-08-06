@@ -109,6 +109,7 @@ object NetezzaUtils {
         }
         case e: RuntimeException => {
           if (!receivedEarlyOut) {
+            log.error("Got runtime exception: " + e.toString)
             setError(e)
           }
         }
